@@ -38,7 +38,7 @@ const App = () => {
     if (query) {
       fetchData(query, page);
     }
-  }, [query, page]);
+  }, [query, page, fetchData]);
 
   const fetchData = (query, pageNumber) => {
     const apiKey = '40931429-8ff889ea2e193444bfa6c5882';
