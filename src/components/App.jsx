@@ -12,11 +12,13 @@ const App = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadMoreVisible, setLoadMoreVisible] = useState(true);
 
-  const handleSearch = value => {
+  const handleSearch = (value) => {
     setQuery(value);
     setImages([]);
     setPage(1);
+    setLoadMoreVisible(true);
     fetchData(value, 1);
   };
 
@@ -24,7 +26,7 @@ const App = () => {
     fetchData(query, page + 1);
   };
 
-  const handleImageClick = largeImageURL => {
+  const handleImageClick = (largeImageURL) => {
     setSelectedImage(largeImageURL);
   };
 
@@ -43,29 +45,35 @@ const App = () => {
     const perPage = 12;
     const url = `https://pixabay.com/api/?q=${query}&page=${pageNumber}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
 
+    if (loading) return; 
+
     setLoading(true);
 
     fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        setImages(prevImages => [...prevImages, ...data.hits]);
+      .then((response) => response.json())
+      .then((data) => {
+        setImages((prevImages) => [...prevImages, ...data.hits]);
         setPage(pageNumber);
+
+        if (data.totalHits <= pageNumber * perPage) {
+          setLoadMoreVisible(false);
+        } else {
+          setLoadMoreVisible(true);
+        }
       })
-      .catch(error => console.error('Error fetching data:', error))
+      .catch((error) => console.error('Error fetching data:', error))
       .finally(() => setLoading(false));
   };
+
   return (
     <AppContainer>
       <Searchbar onSubmit={handleSearch} />
       <ImageGallery images={images} onImageClick={handleImageClick} />
-      {images.length > 0 && <Button onLoadMore={handleLoadMore} />}
-      {selectedImage && (
-        <Modal onCloseModal={handleCloseModal} imageUrl={selectedImage} />
-      )}
+      {loadMoreVisible && images.length > 0 && <Button onLoadMore={handleLoadMore} loading={loading} />}
+      {selectedImage && <Modal onCloseModal={handleCloseModal} imageUrl={selectedImage} />}
       {loading && <Loader />}
     </AppContainer>
   );
 };
-export default App;
 
-// 17.01.24
+export default App;
