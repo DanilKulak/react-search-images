@@ -7,23 +7,24 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 import { fetchData } from '../services/pixabay-api';
 
+
 const App = () => {
   const [query, setQuery] = useState('');
   const [images, setImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [loadMoreVisible, setLoadMoreVisible] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
 
   const handleSearch = value => {
     setQuery(value);
     setImages([]);
     setPage(1);
-    setLoadMoreVisible(true);
+    setHasMore(true);
   };
 
   const handleLoadMore = () => {
-    setPage(page + 1);
+    setPage(prevPage => prevPage + 1);
   };
 
   const handleImageClick = largeImageURL => {
@@ -36,14 +37,14 @@ const App = () => {
 
   useEffect(() => {
     const fetchDataAndSetState = async () => {
-      if (query) {
+      if (query && hasMore) {
         try {
           setLoading(true);
-          const data = await fetchData(query, page, setLoading, setImages, setPage, setLoadMoreVisible);
+          const data = await fetchData(query, page);
           setImages(prevImages => [...prevImages, ...data.hits]);
 
-          // Перевіряємо, чи є додаткові зображення
-          setLoadMoreVisible(data.hits.length > 0);
+          // Перевірка, чи відповідь містить останні зображення
+          setHasMore(data.hits.length === 12); // Припустимо, що 12 - максимальна кількість зображень на сторінці
         } catch (error) {
           console.error('Помилка при отриманні даних:', error);
         } finally {
@@ -53,13 +54,13 @@ const App = () => {
     };
 
     fetchDataAndSetState();
-  }, [query, page]);
+  }, [query, page, hasMore]);
 
   return (
     <AppContainer>
       <Searchbar onSubmit={handleSearch} />
       <ImageGallery images={images} onImageClick={handleImageClick} />
-      {loadMoreVisible && images.length > 0 && (
+      {images.length > 0 && !loading && hasMore && (
         <Button onLoadMore={handleLoadMore} loading={loading} />
       )}
       {selectedImage && (
