@@ -14,6 +14,12 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [loadMoreVisible, setLoadMoreVisible] = useState(true);
 
+  useEffect(() => {
+    if (query) {
+      fetchData(query, page);
+    }
+  }, [query, page]);
+
   const fetchData = (query, pageNumber) => {
     const apiKey = '40931429-8ff889ea2e193444bfa6c5882';
     const perPage = 12;
@@ -24,9 +30,9 @@ const App = () => {
     setLoading(true);
 
     fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        setImages((prevImages) => [...prevImages, ...data.hits]);
+      .then(response => response.json())
+      .then(data => {
+        setImages(prevImages => [...prevImages, ...data.hits]);
         setPage(pageNumber);
 
         if (data.totalHits <= pageNumber * perPage) {
@@ -35,11 +41,11 @@ const App = () => {
           setLoadMoreVisible(true);
         }
       })
-      .catch((error) => console.error('Помилка отримання даних:', error))
+      .catch(error => console.error('Помилка отримання даних:', error))
       .finally(() => setLoading(false));
   };
 
-  const handleSearch = (value) => {
+  const handleSearch = value => {
     setQuery(value);
     setImages([]);
     setPage(1);
@@ -51,7 +57,7 @@ const App = () => {
     fetchData(query, page + 1);
   };
 
-  const handleImageClick = (largeImageURL) => {
+  const handleImageClick = largeImageURL => {
     setSelectedImage(largeImageURL);
   };
 
@@ -59,18 +65,16 @@ const App = () => {
     setSelectedImage(null);
   };
 
-  useEffect(() => {
-    if (query) {
-      fetchData(query, page);
-    }
-  }, [query, page]);
-
   return (
     <AppContainer>
       <Searchbar onSubmit={handleSearch} />
       <ImageGallery images={images} onImageClick={handleImageClick} />
-      {loadMoreVisible && images.length > 0 && <Button onLoadMore={handleLoadMore} loading={loading} />}
-      {selectedImage && <Modal onCloseModal={handleCloseModal} imageUrl={selectedImage} />}
+      {loadMoreVisible && images.length > 0 && (
+        <Button onLoadMore={handleLoadMore} loading={loading} />
+      )}
+      {selectedImage && (
+        <Modal onCloseModal={handleCloseModal} imageUrl={selectedImage} />
+      )}
       {loading && <Loader />}
     </AppContainer>
   );

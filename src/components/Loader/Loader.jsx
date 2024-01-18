@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { TailSpin } from 'react-loader-spinner';
 
 const Loader = () => {
