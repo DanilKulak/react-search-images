@@ -5,6 +5,7 @@ import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
+import { fetchData } from '../services/pixabay-api';
 
 const App = () => {
   const [query, setQuery] = useState('');
@@ -14,47 +15,15 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [loadMoreVisible, setLoadMoreVisible] = useState(true);
 
-  useEffect(() => {
-    if (query) {
-      fetchData(query, page);
-    }
-  }, [query, page]);
-
-  const fetchData = (query, pageNumber) => {
-    const apiKey = '40931429-8ff889ea2e193444bfa6c5882';
-    const perPage = 12;
-    const url = `https://pixabay.com/api/?q=${query}&page=${pageNumber}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
-
-    if (loading) return;
-
-    setLoading(true);
-
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        setImages(prevImages => [...prevImages, ...data.hits]);
-        setPage(pageNumber);
-
-        if (data.totalHits <= pageNumber * perPage) {
-          setLoadMoreVisible(false);
-        } else {
-          setLoadMoreVisible(true);
-        }
-      })
-      .catch(error => console.error('Помилка отримання даних:', error))
-      .finally(() => setLoading(false));
-  };
-
   const handleSearch = value => {
     setQuery(value);
     setImages([]);
     setPage(1);
     setLoadMoreVisible(true);
-    fetchData(value, 1);
   };
 
   const handleLoadMore = () => {
-    fetchData(query, page + 1);
+    setPage(page + 1);
   };
 
   const handleImageClick = largeImageURL => {
@@ -64,6 +33,27 @@ const App = () => {
   const handleCloseModal = () => {
     setSelectedImage(null);
   };
+
+  useEffect(() => {
+    const fetchDataAndSetState = async () => {
+      if (query) {
+        try {
+          setLoading(true);
+          const data = await fetchData(query, page, setLoading, setImages, setPage, setLoadMoreVisible);
+          setImages(prevImages => [...prevImages, ...data.hits]);
+
+          // Перевіряємо, чи є додаткові зображення
+          setLoadMoreVisible(data.hits.length > 0);
+        } catch (error) {
+          console.error('Помилка при отриманні даних:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDataAndSetState();
+  }, [query, page]);
 
   return (
     <AppContainer>
