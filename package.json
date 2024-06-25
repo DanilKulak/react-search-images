@@ -1,8 +1,8 @@
 {
-  "name": "goit-react-hw-04-images",
+  "name": "react-search-images",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://DanilKulak.github.io/goit-react-hw-04-images/",
+  "homepage": "https://DanilKulak.github.io/react-search-images/",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
